@@ -1,3 +1,0 @@
-/home/leonardo/Documents/Projects/cpp/driving-game/build/CMakeFiles/game.dir
-/home/leonardo/Documents/Projects/cpp/driving-game/build/CMakeFiles/edit_cache.dir
-/home/leonardo/Documents/Projects/cpp/driving-game/build/CMakeFiles/rebuild_cache.dir
