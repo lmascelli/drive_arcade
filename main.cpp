@@ -2,6 +2,8 @@
 #include <SDL2/SDL_pixels.h>
 #include <SDL2/SDL_render.h>
 #include <math.h>
+#include <vector>
+
 
 #define TRANSPARENT 0, 0, 0, 0
 #define BLACK 0, 0, 0, 255
@@ -12,7 +14,7 @@
 #define BLUE 0, 0, 255, 255
 
 class Game {
-public:
+ public:
   Game() {
     SDL_Init(SDL_INIT_VIDEO);
     SDL_CreateWindowAndRenderer(width * scale, height * scale, 0, &window,
@@ -25,6 +27,18 @@ public:
         SDL_CreateRGBSurfaceWithFormat(0, 14, 7, 4, SDL_PIXELFORMAT_RGBA32);
     car_surface->pixels = car_data;
     car = SDL_CreateTextureFromSurface(renderer, car_surface);
+
+    vecTrack.push_back(std::make_pair(0.0f, 10.0f));
+    vecTrack.push_back(std::make_pair(0.0f, 200.0f));
+    vecTrack.push_back(std::make_pair(1.0f, 200.0f));
+    vecTrack.push_back(std::make_pair(0.0f, 400.0f));
+    vecTrack.push_back(std::make_pair(-1.0f, 100.0f));
+    vecTrack.push_back(std::make_pair(0.0f, 200.0f));
+    vecTrack.push_back(std::make_pair(-1.0f, 200.0f));
+    vecTrack.push_back(std::make_pair(1.0f, 200.0f));
+    vecTrack.push_back(std::make_pair(0.0f, 200.0f));
+    vecTrack.push_back(std::make_pair(0.2f, 500.0f));
+    vecTrack.push_back(std::make_pair(0.0f, 200.0f));
   }
 
   void run() {
@@ -37,45 +51,43 @@ public:
     }
   }
 
-private:
+ private:
   void event() {
     SDL_Event e;
     while (SDL_PollEvent(&e)) {
       switch (e.type) {
-      case SDL_QUIT:
-        running = false;
-        break;
-      case SDL_KEYDOWN:
-        switch (e.key.keysym.sym) {
-        case SDLK_UP:
-          moving = true;
+        case SDL_QUIT:
+          running = false;
           break;
-        }
-        break;
-      case SDL_KEYUP:
-        switch (e.key.keysym.sym) {
-        case SDLK_UP:
-          moving = false;
+        case SDL_KEYDOWN:
+          switch (e.key.keysym.sym) {
+            case SDLK_UP:
+              moving = true;
+              break;
+          }
           break;
-        }
-        break;
-      default:
-        break;
+        case SDL_KEYUP:
+          switch (e.key.keysym.sym) {
+            case SDLK_UP:
+              moving = false;
+              break;
+          }
+          break;
+        default:
+          break;
       }
     }
   }
   void logic(float delta) {
-    if (moving)
-      fDistance += 20.f * delta;
+    if (moving) fDistance += 200.f * delta;
   }
   void render() {
     SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
     SDL_RenderClear(renderer);
 
     SDL_SetRenderDrawColor(renderer, 255, 255, 255, 255);
-    for (int x = 0; x < width; x++) {
-      for (int y = 0; y < height / 2; y++) {
-
+    for (unsigned int x = 0; x < width; x++) {
+      for (unsigned int y = 0; y < height / 2; y++) {
         float fPerspective = (float)y / ((float)height / 2.f);
         float fRoadWidth = 0.1f + 0.8f * fPerspective;
         float fClipWidth = fRoadWidth * 0.15f;
@@ -89,22 +101,28 @@ private:
 
         int nRow = height / 2 + y;
 
-        if (x >= 0 && x < nLeftGrass) {
+        if (x >= 0 && x < nLeftGrass) { // LEFT GRASS
           if (sin(20.f * powf(1.f - fPerspective, 3) + 0.1f * fDistance) > 0.0f)
             SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
           else
             SDL_SetRenderDrawColor(renderer, DARK_GREEN);
           SDL_RenderDrawPoint(renderer, x, nRow);
-        } else if (x >= nLeftGrass && x < nLeftClip) {
-          SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+        } else if (x >= nLeftGrass && x < nLeftClip) { // LEFT CLIP
+          if (sin(80.f * powf(1.f - fPerspective, 3) + 0.1f * fDistance) > 0.0f)
+            SDL_SetRenderDrawColor(renderer, WHITE);
+          else
+            SDL_SetRenderDrawColor(renderer, RED);
           SDL_RenderDrawPoint(renderer, x, nRow);
-        } else if (x >= nLeftClip && x < nRightClip) {
+        } else if (x >= nLeftClip && x < nRightClip) { // ROAD 
           SDL_SetRenderDrawColor(renderer, 100, 100, 100, 255);
           SDL_RenderDrawPoint(renderer, x, nRow);
-        } else if (x >= nRightClip && x < nRightGrass) {
-          SDL_SetRenderDrawColor(renderer, 255, 0, 0, 255);
+        } else if (x >= nRightClip && x < nRightGrass) { // RIGHT CLIP
+          if (sin(80.f * powf(1.f - fPerspective, 3) + 0.1f * fDistance) > 0.0f)
+            SDL_SetRenderDrawColor(renderer, WHITE);
+          else
+            SDL_SetRenderDrawColor(renderer, RED);
           SDL_RenderDrawPoint(renderer, x, nRow);
-        } else if (x >= nRightGrass && x < width) {
+        } else if (x >= nRightGrass && x < width) { // RIGHT GRASS
           if (sin(20.f * powf(1.f - fPerspective, 3) + 0.1f * fDistance) > 0.0f)
             SDL_SetRenderDrawColor(renderer, 0, 255, 0, 255);
           else
@@ -129,6 +147,8 @@ private:
 
   float fCarPos = 0.f;
   float fDistance = 0.f;
+
+  std::vector<std::pair<float, float>> vecTrack;
 
   bool moving = false;
 
@@ -158,6 +178,9 @@ private:
   };
 
   SDL_Texture *car = nullptr;
+
+  float fOffset = 0;
+  int nTrackSection = 0;
 
   unsigned int previous = SDL_GetTicks();
 };

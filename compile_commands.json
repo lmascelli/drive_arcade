@@ -1,0 +1,7 @@
+[
+{
+  "directory": "D:/Projects/cpp/drive_arcade/build",
+  "command": "D:\\Qt\\Tools\\mingw1120_64\\bin\\c++.exe -ID:/Projects/cpp/drive_arcade/include -o CMakeFiles\\game.dir\\main.cpp.obj -c D:\\Projects\\cpp\\drive_arcade\\main.cpp",
+  "file": "D:\\Projects\\cpp\\drive_arcade\\main.cpp"
+}
+]
