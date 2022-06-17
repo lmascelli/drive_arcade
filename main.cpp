@@ -53,7 +53,7 @@ private:
   float fSpeed = 0.f;
   float fAcc = 500.f;
   float fKStreet = 0.002f;
-  float fKClip = 0.009f;
+  float fKClip = 0.003f;
   float fKGrass = 0.019f;
   bool moving = false;
   bool right = false;
@@ -132,18 +132,18 @@ Game::Game() {
       SDL_CreateRGBSurfaceWithFormat(0, 14, 7, 4, SDL_PIXELFORMAT_RGBA32);
   car_surface_left->pixels = car_data_left;
   car_left = SDL_CreateTextureFromSurface(renderer, car_surface_left);
-  track.push_back(std::make_pair(0.f, 200.f));
-  track.push_back(std::make_pair(20.f, 300.f));
-  track.push_back(std::make_pair(0.f, 100.f));
-  track.push_back(std::make_pair(10.f, 300.f));
-  track.push_back(std::make_pair(20.f, 200.f));
-  track.push_back(std::make_pair(-20.f, 200.f));
-  track.push_back(std::make_pair(0.f, 400.f));
-  track.push_back(std::make_pair(10.f, 100.f));
-  track.push_back(std::make_pair(0.f, 100.f));
-  track.push_back(std::make_pair(10.f, 300.f));
-  track.push_back(std::make_pair(0.f, 200.f));
-  track.push_back(std::make_pair(10.f, 200.f));
+  track.push_back(std::make_pair(0.f, 500.f));
+  track.push_back(std::make_pair(90.f, 900.f));
+  track.push_back(std::make_pair(0.f, 300.f));
+  track.push_back(std::make_pair(70.f, 900.f));
+  track.push_back(std::make_pair(50.f, 500.f));
+  track.push_back(std::make_pair(-120.f, 500.f));
+  track.push_back(std::make_pair(0.f, 900.f));
+  track.push_back(std::make_pair(60.f, 500.f));
+  track.push_back(std::make_pair(0.f, 500.f));
+  track.push_back(std::make_pair(60.f, 900.f));
+  track.push_back(std::make_pair(0.f, 600.f));
+  track.push_back(std::make_pair(100.f, 600.f));
 
   current_sector_curvature = track[current_sector].first;
   current_sector_end = track[current_sector].second;
@@ -230,6 +230,7 @@ void Game::logic(float delta) {
 
   current_sector_point_curvature =
       0.7 * sin(current_sector_traveled_normalized * 3.14) *
+      current_sector_traveled_normalized *
       sin(current_sector_curvature / 180 * 3.14);
 
   const float L = fAcc / 500.f;
@@ -238,9 +239,9 @@ void Game::logic(float delta) {
       fSpeed * fSpeed * sin(current_sector_point_curvature / 180 * 3.14) * L;
   fCarPos -= fAccCent * delta * delta;
   if (right and not left)
-    fCarPos += 300 * delta;
+    fCarPos += fSpeed * 1e-3 * delta;
   if (left and not right)
-    fCarPos -= 300 * delta;
+    fCarPos -= fSpeed * 1e-3 * delta;
   if (fCarPos > 1.f)
     fCarPos = 1.f;
   if (fCarPos < -1.f)
