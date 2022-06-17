@@ -2,3 +2,5 @@ build/
 lib/
 include/
 SDL2.dll
+SDL2/
+.cache/
