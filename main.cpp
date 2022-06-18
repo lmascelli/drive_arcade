@@ -4,19 +4,24 @@
 #include <iostream>
 #include <math.h>
 #include <utility>
+#include <iostream>
 #include <vector>
 
-#define TRANSPARENT 0, 0, 0, 0
-#define BLACK 0, 0, 0, 255
-#define WHITE 255, 255, 255, 255
-#define RED 255, 0, 0, 255
-#define GREEN 0, 255, 0, 255
-#define DARK_GREEN 0, 150, 0, 255
-#define BLUE 0, 0, 255, 255
-#define AZURE 60, 60, 150, 255
-#define GRAY 100, 100, 100, 255
+#define COLOR(X)  (X >> 8*3) & 0x000000ff ,\
+                  (X >> 8*2) & 0x000000ff ,\
+                  (X >> 8*1) & 0x000000ff ,\
+                  (X >> 8*0) & 0x000000ff
 
-#define DRAW_POINT(x, y, c) drawPoint(renderer, x, y, c)
+#define TRANSPARENT COLOR(0x00000000)
+#define BLACK       COLOR(0x000000ff)
+#define WHITE       COLOR(0xffffffff)
+#define RED         COLOR(0xff0000ff)
+#define GREEN       COLOR(0x00ff00ff) 
+#define DARK_GREEN  COLOR(0x00aa00ff)
+#define BLUE        COLOR(0x0000ffff)
+#define AZURE       COLOR(0x5050ffff)
+#define GRAY        COLOR(0xaaaaaaff) 
+
 
 inline void drawPoint(SDL_Renderer *renderer, unsigned int x, unsigned int y,
                       unsigned char r, unsigned char g, unsigned char b,
@@ -24,6 +29,8 @@ inline void drawPoint(SDL_Renderer *renderer, unsigned int x, unsigned int y,
   SDL_SetRenderDrawColor(renderer, r, g, b, a);
   SDL_RenderDrawPoint(renderer, x, y);
 }
+
+#define DRAW_POINT(x, y, c) drawPoint(renderer, x, y, c)
 
 class Game {
 public:
@@ -47,7 +54,7 @@ private:
   SDL_Renderer *renderer = nullptr;
   unsigned int previous = SDL_GetTicks();
 
-  // Car variables
+  // Car parameters
   float fCarPos = 0.f;
   float fDistance = 0.f;
   float fSpeed = 0.f;
@@ -55,12 +62,19 @@ private:
   float fKStreet = 0.002f;
   float fKClip = 0.003f;
   float fKGrass = 0.019f;
+  
+  // Car state variables
   bool moving = false;
   bool right = false;
   bool left = false;
 
-// clang-format off
-  //
+  // Car render variables
+  SDL_Texture *car = nullptr;
+  SDL_Texture *car_straight;
+  SDL_Texture *car_right;
+  SDL_Texture *car_left;
+
+  // clang-format off
   #define B    TRANSPARENT
   #define A    RED
   unsigned char car_data_straight[14 * 7 * 4] = {
@@ -93,10 +107,7 @@ private:
       B, A, A, B, B, B, A, A, A, B, B, B, A, A,
   };
   // clang-format on
-  SDL_Texture *car = nullptr;
-  SDL_Texture *car_straight;
-  SDL_Texture *car_right;
-  SDL_Texture *car_left;
+  
 
   // Track variables
   std::vector<std::pair<float, float>> track;
