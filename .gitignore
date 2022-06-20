@@ -4,3 +4,4 @@ include/
 SDL2.dll
 SDL2/
 .cache/
+compile_commands.json
