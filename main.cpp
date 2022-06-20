@@ -1,8 +1,4 @@
-#include "SDL2/SDL_keycode.h"
-#include "SDL2/SDL_rect.h"
 #include <SDL2/SDL.h>
-#include <SDL2/SDL_pixels.h>
-#include <SDL2/SDL_render.h>
 #include <iostream>
 #include <math.h>
 #include <utility>
@@ -61,11 +57,6 @@ private:
   unsigned int height = 100;
   unsigned int scale = 8;
   bool running = true;
-
-  // FOV variables
-  const float fov_angle = M_PI / 4;
-  const float m = tan(fov_angle);
-  const float hor = 500; // in meters
 
   std::vector<std::pair<float, float>> vecTrack;
 
@@ -315,21 +306,6 @@ void Game::render() {
   SDL_RenderClear(renderer);
 
   /*------------------------------- draw street ------------------------------*/
-
-  // CALCULATE VISIBLE TRACK SECTORS
-
-  std::vector<unsigned int> sectors_to_draw = {current_sector};
-  float current_remaining_angle =
-      1.f - current_sector_traveled_normalized * current_sector_total_angle;
-  SDL_FPoint x0 = {current_sector_radius * (1.f - cos(current_remaining_angle)),
-                   current_sector_radius * sin(current_remaining_angle)};
-  bool found;
-  if (x0.y < m * x0.x or x0.y < hor) {
-    found = true;
-  } else found = false;
-  while (!found) {
-
-  }
 
   for (int y = 0; y < height / 2; y++) {
     int yd = height / 2 + y;
