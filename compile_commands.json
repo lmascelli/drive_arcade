@@ -1,7 +1,7 @@
 [
 {
-  "directory": "/home/leonardo/Documents/Projects/cpp/driving-game/build",
-  "command": "/usr/bin/c++ -I/home/leonardo/Documents/Projects/cpp/driving-game/include -I/home/leonardo/Documents/Projects/cpp/driving-game/D:/usr/include -std=gnu++20 -o CMakeFiles/game.dir/main.cpp.o -c /home/leonardo/Documents/Projects/cpp/driving-game/main.cpp",
-  "file": "/home/leonardo/Documents/Projects/cpp/driving-game/main.cpp"
+  "directory": "D:/Projects/cpp/drive_arcade/build",
+  "command": "D:\\Qt\\Tools\\mingw1120_64\\bin\\c++.exe -ID:/Projects/cpp/drive_arcade/include -ID:/usr/include -std=gnu++20 -o CMakeFiles\\game.dir\\main.cpp.obj -c D:\\Projects\\cpp\\drive_arcade\\main.cpp",
+  "file": "D:\\Projects\\cpp\\drive_arcade\\main.cpp"
 }
 ]
