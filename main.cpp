@@ -7,10 +7,17 @@
 #include <iostream>
 #include <vector>
 
-#define COLOR(X)  (X >> 8*3) & 0x000000ff ,\
-                  (X >> 8*2) & 0x000000ff ,\
-                  (X >> 8*1) & 0x000000ff ,\
-                  (X >> 8*0) & 0x000000ff
+
+/******************************************************************************
+*                                 DEFINES
+******************************************************************************/
+
+#define MACHINE_ZERO 1e-9
+
+#define COLOR(X)  (X >> 24) & 0x000000ff ,\
+                  (X >> 16) & 0x000000ff ,\
+                  (X >>  8) & 0x000000ff ,\
+                  (X      ) & 0x000000ff
 
 #define TRANSPARENT COLOR(0x00000000)
 #define BLACK       COLOR(0x000000ff)
@@ -22,6 +29,9 @@
 #define AZURE       COLOR(0x5050ffff)
 #define GRAY        COLOR(0xaaaaaaff) 
 
+/******************************************************************************
+*                           UTILITY FUNCTIONS 
+******************************************************************************/
 
 inline void drawPoint(SDL_Renderer *renderer, unsigned int x, unsigned int y,
                       unsigned char r, unsigned char g, unsigned char b,
@@ -32,6 +42,8 @@ inline void drawPoint(SDL_Renderer *renderer, unsigned int x, unsigned int y,
 
 #define DRAW_POINT(x, y, c) drawPoint(renderer, x, y, c)
 
+/*****************************************************************************/
+
 class Game {
 public:
   Game();
@@ -39,7 +51,7 @@ public:
 
 private:
   void input();
-  void logic(float delta);
+  void logic(float delta);    // in seconds
   void render();
 
   // Window variables
@@ -56,15 +68,17 @@ private:
 
   // Car parameters
   float fCarPos = 0.f;
-  float fDistance = 0.f;
-  float fSpeed = 0.f;
-  float fAcc = 500.f;
-  float fKStreet = 0.002f;
-  float fKClip = 0.003f;
-  float fKGrass = 0.019f;
+  float current_distance = 0.f;
+  float current_speed = 0.f;
+  float fHSpeed = 0.f;
+  
+  float fAcc = 4.e2f;         // m/s^2
+  float fKStreet = 1.e-1f;    // 1/s
+  float fKClip = 1.5e-1f;     // 1/s
+  float fKGrass = 2.e-1f;     // 1/s
   
   // Car state variables
-  bool moving = false;
+  bool accelerating = false;
   bool right = false;
   bool left = false;
 
@@ -112,12 +126,17 @@ private:
   // Track variables
   std::vector<std::pair<float, float>> track;
   unsigned int current_sector = 0;
-  float current_sector_curvature = 0.f;
+  float current_sector_total_angle = 0.f;
   float current_sector_point_curvature = 0.f;
-  float current_sector_end = 0.f;
+  float current_sector_length = 0.f;
+  float current_sector_radius = 0.f;
   float current_sector_traveled = 0.f;
   float current_sector_traveled_normalized = 0.f;
 };
+
+/******************************************************************************
+*                                 INITIALIZATION
+******************************************************************************/
 
 Game::Game() {
   SDL_Init(SDL_INIT_VIDEO);
@@ -143,6 +162,9 @@ Game::Game() {
       SDL_CreateRGBSurfaceWithFormat(0, 14, 7, 4, SDL_PIXELFORMAT_RGBA32);
   car_surface_left->pixels = car_data_left;
   car_left = SDL_CreateTextureFromSurface(renderer, car_surface_left);
+
+
+
   track.push_back(std::make_pair(0.f, 500.f));
   track.push_back(std::make_pair(90.f, 900.f));
   track.push_back(std::make_pair(0.f, 300.f));
@@ -156,15 +178,18 @@ Game::Game() {
   track.push_back(std::make_pair(0.f, 600.f));
   track.push_back(std::make_pair(100.f, 600.f));
 
-  current_sector_curvature = track[current_sector].first;
-  current_sector_end = track[current_sector].second;
+  current_sector_total_angle = track[current_sector].first;
+  current_sector_length = track[current_sector].second;
+  current_sector_radius = (current_sector_total_angle > MACHINE_ZERO) ?
+                           current_sector_length/current_sector_total_angle :
+                           0.f;
 }
 
 void Game::run() {
   while (running) {
     input();
     unsigned int now = SDL_GetTicks();
-    logic(1e-3 * (float)(now - previous) / 1000);
+    logic(1e-3 * (float)(now - previous));
     previous = now;
     render();
   }
@@ -180,7 +205,7 @@ void Game::input() {
     case SDL_KEYDOWN:
       switch (e.key.keysym.sym) {
       case SDLK_UP:
-        moving = true;
+        accelerating = true;
         break;
       case SDLK_RIGHT:
         right = true;
@@ -193,7 +218,7 @@ void Game::input() {
     case SDL_KEYUP:
       switch (e.key.keysym.sym) {
       case SDLK_UP:
-        moving = false;
+        accelerating = false;
         break;
       case SDLK_RIGHT:
         right = false;
@@ -210,95 +235,103 @@ void Game::input() {
 }
 
 void Game::logic(float delta) {
-  float acc;
-  if (moving)
-    acc = fAcc;
-  else
-    acc = 0.f;
-  float k;
-  float carPos = abs(fCarPos);
+  
+/******************************************************************************
+*                                 CAR MOVEMENT 
+******************************************************************************/
+/*--------------------------- Setting parameters ----------------------------*/ 
 
-  if (carPos > 0.8)
-    k = fKGrass;
-  else if (carPos > 0.60)
-    k = fKClip;
+  float current_acc;
+  if (accelerating)
+    current_acc = fAcc;
   else
-    k = fKStreet;
+    current_acc = 0.f;
+  float current_k;
+  float car_pos_abs = abs(fCarPos);
 
-  fSpeed += acc - k * fSpeed;
-  fDistance += fSpeed * delta;
-  current_sector_traveled += fSpeed * delta;
+  if (car_pos_abs > 0.8)
+    current_k = fKGrass;
+  else if (car_pos_abs > 0.60)
+    current_k = fKClip;
+  else
+    current_k = fKStreet;
+
+/*----------------------- Computing distance state --------------------------*/
+/*
+ * dv/dt = acc - kv
+ * ds/dt = v
+ * 
+ * v = current_speed
+ * acc = current_acc
+ * s = current_distance
+ */
+
+  current_speed += (current_acc - current_k * current_speed) * delta;
+  printf("%f\n", current_k * current_speed);
+  float current_distance_step = current_speed * delta;
+  current_distance += current_distance_step;
+
+
+/*------------------------- Managing track sector ---------------------------*/
+
+  current_sector_traveled += current_distance_step;
   current_sector_traveled_normalized =
-      current_sector_traveled / current_sector_end;
+      current_sector_traveled / current_sector_length;
 
-  if (current_sector_traveled >= current_sector_end) {
+  if (current_sector_traveled >= current_sector_length) {
     current_sector++;
     current_sector %= track.size();
     current_sector_traveled = 0.f;
-    current_sector_curvature = track[current_sector].first;
-    current_sector_end = track[current_sector].second;
+    current_sector_total_angle = track[current_sector].first;
+    current_sector_length = track[current_sector].second;
+    current_sector_radius = (current_sector_total_angle > MACHINE_ZERO) ? current_sector_length/current_sector_total_angle : 0.f;
   }
 
-  current_sector_point_curvature =
-      0.7 * sin(current_sector_traveled_normalized * 3.14) *
-      current_sector_traveled_normalized *
-      sin(current_sector_curvature / 180 * 3.14);
+/*-------------------- Computing car horizontal state -----------------------*/
 
-  const float L = fAcc / 500.f;
 
-  float fAccCent =
-      fSpeed * fSpeed * sin(current_sector_point_curvature / 180 * 3.14) * L;
-  fCarPos -= fAccCent * delta * delta;
-  if (right and not left)
-    fCarPos += fSpeed * 1e-3 * delta;
-  if (left and not right)
-    fCarPos -= fSpeed * 1e-3 * delta;
-  if (fCarPos > 1.f)
-    fCarPos = 1.f;
-  if (fCarPos < -1.f)
-    fCarPos = -1.f;
 }
 
 void Game::render() {
   // CLEAR RENDERER
-  SDL_SetRenderDrawColor(renderer, 0, 0, 0, 255);
+  SDL_SetRenderDrawColor(renderer, BLACK);
   SDL_RenderClear(renderer);
 
   // DRAW STREET
-  for (int x = 0; x < width; x++) {
-    for (int y = 0; y < height / 2; y++) {
-      int yd = height / 2 + y;
-      float fPerspective = (float)y / ((float)height / 2.f); // normalize y
-      float fRoadWidth = 0.05f + 0.4f * fPerspective;
-      float fClipWidth = fRoadWidth * 0.30f;
-      float fCurvatureRow =
-          current_sector_point_curvature * pow(1 - fPerspective, 3);
-      float fMiddlePoint = 0.5f + fCurvatureRow;
+  for (int y = 0; y < height / 2; y++) {
+    int yd = height / 2 + y;
+    float fPerspective = (float)y / ((float)height / 2.f); // normalize y
+    float fRoadWidth = 0.05f + 0.4f * fPerspective;
+    float fClipWidth = fRoadWidth * 0.30f;
+    float fCurvatureRow =
+        current_sector_point_curvature * pow(1 - fPerspective, 3);
+    float fMiddlePoint = 0.5f + fCurvatureRow;
 
-      int nLeftGrass = (fMiddlePoint - fRoadWidth - fClipWidth) * width;
-      int nLeftClip = (fMiddlePoint - fRoadWidth) * width;
-      int nRightClip = (fMiddlePoint + fRoadWidth) * width;
-      int nRightGrass = (fMiddlePoint + fRoadWidth + fClipWidth) * width;
+    int nLeftGrass = (fMiddlePoint - fRoadWidth - fClipWidth) * width;
+    int nLeftClip = (fMiddlePoint - fRoadWidth) * width;
+    int nRightClip = (fMiddlePoint + fRoadWidth) * width;
+    int nRightGrass = (fMiddlePoint + fRoadWidth + fClipWidth) * width;
 
+    for (int x = 0; x < width; x++) {
       if (x >= 0 && x < nLeftGrass) {
-        if (sin(20.f * powf(1.f - fPerspective, 3) + 0.1f * fDistance) > 0.0f)
+        if (sin(20.f * powf(1.f - fPerspective, 3) + 0.1f * current_distance) > 0.0f)
           DRAW_POINT(x, yd, GREEN);
         else
           DRAW_POINT(x, yd, DARK_GREEN);
-      } else if (x >= nLeftGrass && x < nLeftClip) {
-        if (sin(50.f * powf(1.f - fPerspective, 3) + 0.1f * fDistance) > 0.0f)
+      } else if (x >= nLeftGrass and x < nLeftClip) {
+        if (sin(50.f * powf(1.f - fPerspective, 3) + 0.1f * current_distance) > 0.0f)
           DRAW_POINT(x, yd, RED);
         else
           DRAW_POINT(x, yd, WHITE);
-      } else if (x >= nLeftClip && x < nRightClip) {
+      } else if (x >= nLeftClip and x < nRightClip) {
         DRAW_POINT(x, yd, GRAY);
-      } else if (x >= nRightClip && x < nRightGrass) {
-        if (sin(50.f * powf(1.f - fPerspective, 3) + 0.1f * fDistance) > 0.0f)
+      } else if (x >= nRightClip and x < nRightGrass) {
+        if (sin(50.f * powf(1.f - fPerspective, 3) + 0.1f * current_distance) > 0.0f)
           DRAW_POINT(x, yd, RED);
         else
           DRAW_POINT(x, yd, WHITE);
-      } else if (x >= nRightGrass && x < width) {
-        if (sin(20.f * powf(1.f - fPerspective, 3) + 0.1f * fDistance) > 0.0f)
+      } else if (x >= nRightGrass and x < width) {
+        if (sin(20.f * powf(1.f - fPerspective, 3) + 0.1f * current_distance) > 0.0f)
           DRAW_POINT(x, yd, GREEN);
         else
           DRAW_POINT(x, yd, DARK_GREEN);
@@ -326,6 +359,10 @@ void Game::render() {
 
   SDL_RenderPresent(renderer);
 }
+
+/******************************************************************************
+*                                     MAIN
+******************************************************************************/
 
 int main(int argc, char **argv) {
   Game g;
