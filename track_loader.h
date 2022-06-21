@@ -1,6 +1,7 @@
 #pragma once
 #include <string>
 #include <vector>
+#include <functional>
 
 /**
 * Track file protocol
@@ -21,8 +22,7 @@
 typedef struct {
   float angle;
   float length;
-  float radius; 
-  std::pair<float, float> center;
+  std::function<float(float)> f;
 } sector;
 
 bool read_track_file(std::string filename, std::vector<sector>& track);

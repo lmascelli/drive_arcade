@@ -33,4 +33,4 @@
       A, A, A, A, A, A, A, A, A, A, A, A, A, A,
       B, A, A, B, B, B, A, A, A, B, B, B, A, A,
   };
-  // clang-format on
+// clang-format on

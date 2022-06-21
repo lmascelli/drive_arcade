@@ -10,6 +10,8 @@ target_include_directories(game PRIVATE include "D:/usr/include")
 target_link_directories(game PRIVATE lib "D:/usr/lib")
 target_link_libraries(game SDL2main SDL2)
 else()
-add_executable(game main.cpp track_loader.cpp)
+add_executable(game main.cpp 
+                    utility.cpp
+                    track_loader.cpp)
 target_link_libraries(game SDL2main SDL2)
 endif()

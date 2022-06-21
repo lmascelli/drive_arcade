@@ -30,7 +30,6 @@ bool read_track_file(std::string filename, std::vector<sector> &track) {
              "angle:  %f\n"
              "length: %f\n",
              i, angle, length);
-      track.push_back({angle, length, 0., std::make_pair(0, 0)});
     }
   } catch (...) {
     return false;
