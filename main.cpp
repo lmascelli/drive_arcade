@@ -109,19 +109,6 @@ Game::Game() {
   car_surface_left->pixels = car_data_left;
   car_left = SDL_CreateTextureFromSurface(renderer, car_surface_left);
 
-  track.push_back(std::make_pair(0.f, 500.f));
-  track.push_back(std::make_pair(90.f, 900.f));
-  track.push_back(std::make_pair(0.f, 300.f));
-  track.push_back(std::make_pair(70.f, 900.f));
-  track.push_back(std::make_pair(50.f, 500.f));
-  track.push_back(std::make_pair(-120.f, 500.f));
-  track.push_back(std::make_pair(0.f, 900.f));
-  track.push_back(std::make_pair(60.f, 500.f));
-  track.push_back(std::make_pair(0.f, 500.f));
-  track.push_back(std::make_pair(60.f, 900.f));
-  track.push_back(std::make_pair(0.f, 600.f));
-  track.push_back(std::make_pair(100.f, 600.f));
-
   current_sector_total_angle = track[current_sector].first;
   current_sector_length = track[current_sector].second;
   current_sector_radius =

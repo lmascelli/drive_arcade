@@ -1,5 +1,5 @@
 #pragma once
-#include <fstream>
+#include <string>
 #include <vector>
 
 /**
@@ -10,8 +10,8 @@
 *   - the length of the curve
 *   - the center of the curve, NULL if it's straight one
 *
-* Each sector must be separated from the next by a space character
-* and the first number must contain the total number of sectors
+* Each sector must be separated from the next by a newline character
+* and the first number must be the total number of sectors
 *
 * -----------------------------------
 *  TOT SECTOR NUMBER
@@ -21,6 +21,7 @@
 typedef struct {
   float angle;
   float length;
+  float radius; 
   std::pair<float, float> center;
 } sector;
 
