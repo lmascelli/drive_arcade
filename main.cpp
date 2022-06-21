@@ -4,28 +4,9 @@
 #include <utility>
 #include <vector>
 
-/******************************************************************************
- *                                 DEFINES
- ******************************************************************************/
-
-#define MACHINE_ZERO 1e-9
-
-// clang-format off
-#define COLOR(X)  (X >> 24) & 0x000000ff ,\
-                  (X >> 16) & 0x000000ff ,\
-                  (X >>  8) & 0x000000ff ,\
-                  (X      ) & 0x000000ff
-
-#define TRANSPARENT COLOR(0x00000000)
-#define BLACK       COLOR(0x000000ff)
-#define WHITE       COLOR(0xffffffff)
-#define RED         COLOR(0xff0000ff)
-#define GREEN       COLOR(0x00ff00ff) 
-#define DARK_GREEN  COLOR(0x00aa00ff)
-#define BLUE        COLOR(0x0000ffff)
-#define AZURE       COLOR(0x5050ffff)
-#define GRAY        COLOR(0xaaaaaaff)
-// clang-format on
+#include "car.h"
+#include "defines.h"
+#include "track_loader.h"
 
 /******************************************************************************
  *                           UTILITY FUNCTIONS
@@ -87,40 +68,6 @@ private:
   SDL_Texture *car_straight;
   SDL_Texture *car_right;
   SDL_Texture *car_left;
-
-// clang-format off
-  #define B    TRANSPARENT
-  #define A    RED
-  unsigned char car_data_straight[14 * 7 * 4] = {
-      B, B, B, A, A, A, A, A, A, A, A, B, B, B,
-      B, B, B, B, B, B, A, A, B, B, B, B, B, B,
-      B, B, B, B, B, A, A, A, A, B, B, B, B, B,
-      B, B, B, B, B, A, A, A, A, B, B, B, B, B,
-      A, A, A, B, B, A, A, A, A, B, B, A, A, A,
-      A, A, A, A, A, A, A, A, A, A, A, A, A, A,
-      A, A, A, B, B, A, A, A, A, B, B, A, A, A,
-  };
-
-  unsigned char car_data_right[14 * 7 * 4] = {
-      B, B, B, B, B, A, A, A, A, A, A, A, A, B,
-      B, B, B, B, B, B, B, B, A, A, B, B, B, B,
-      B, B, B, B, B, B, A, A, A, B, B, B, B, B,
-      B, B, B, B, B, A, A, A, A, B, B, B, B, B,
-      B, A, A, B, B, A, A, A, A, B, B, B, A, A,
-      A, A, A, A, A, A, A, A, A, A, A, A, A, A,
-      A, A, B, B, B, A, A, A, A, B, B, A, A, B,
-  };
-
-  unsigned char car_data_left[14 * 7 * 4] = {
-      B, A, A, A, A, A, A, A, A, B, B, B, B, B,
-      B, B, B, B, A, A, B, B, B, B, B, B, B, B,
-      B, B, B, B, B, A, A, A, B, B, B, B, B, B,
-      B, B, B, B, B, A, A, A, A, B, B, B, B, B,
-      A, A, B, B, B, A, A, A, A, B, B, A, A, B,
-      A, A, A, A, A, A, A, A, A, A, A, A, A, A,
-      B, A, A, B, B, B, A, A, A, B, B, B, A, A,
-  };
-  // clang-format on
 
   // Track variables
   std::vector<std::pair<float, float>> track;
@@ -381,7 +328,9 @@ void Game::render() {
  ******************************************************************************/
 
 int main(int argc, char **argv) {
-  Game g;
-  g.run();
+  std::vector<sector> track;
+  read_track_file("../track_sample.track", track);
+  //  Game g;
+  //  g.run();
   return 0;
 }
