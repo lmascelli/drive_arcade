@@ -2,6 +2,9 @@
 #include <string>
 #include <vector>
 #include <functional>
+#include <SDL2/SDL.h>
+
+using Point = SDL_FPoint;
 
 /**
 * Track file protocol

@@ -6,7 +6,7 @@
 
 #include "car.h"
 #include "defines.h"
-#include "track_loader.h"
+#include "track.h"
 #include "utility.h"
 
 class Game {
@@ -29,9 +29,11 @@ private:
   SDL_Renderer *renderer = nullptr;
   unsigned int previous = SDL_GetTicks();
 
-  // Street render varibles
+  // Camera varibles
   float horizont_distance = 300.; // meters
   float fov_angle = M_PI_2f;      // radians
+  float rotation_angle = 0.f;
+  SDL_FPoint offset = {0.f, 0.f};
 
   // Car render variables
   SDL_Texture *car = nullptr;
