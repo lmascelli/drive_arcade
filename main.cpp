@@ -1,4 +1,5 @@
 #include <SDL2/SDL.h>
+#include <assert.h>
 #include <iostream>
 #include <math.h>
 #include <utility>
@@ -141,12 +142,61 @@ void Game::render() {
 }
 
 /******************************************************************************
+ *                                    TEST
+ ******************************************************************************/
+
+void test() {
+  SDL_Window *test_wind;
+  SDL_Renderer *test_rend;
+  bool running = true;
+
+  const unsigned int width = 100, height = 200;
+  track t;
+  read_track_file("../track_sample.track", t);
+
+  float d = 0.f;
+  unsigned char pixels[width * height * 4];
+  while (d < t.length - 1) {
+    Point x = get_world_coord_from_distance(d, t);
+    assert(x.x < width and x.y < height);
+    for (unsigned int i = 0; i < 4; i++)
+      pixels[static_cast<unsigned int>(x.x) +
+             width * static_cast<unsigned int>(x.y) + i] = 0;
+    d++;
+  }
+
+  if (!SDL_CreateWindowAndRenderer(300, 600, SDL_WINDOW_SHOWN, &test_wind,
+                                   &test_rend)) {
+    SDL_RenderSetScale(test_rend, 2, 2);
+    SDL_Surface *test_surf;
+
+    test_surf = SDL_CreateRGBSurfaceWithFormatFrom(
+        (void *)pixels, width, height, 8, 0, SDL_PIXELFORMAT_RGBA32);
+  }
+
+  while (running) {
+
+    SDL_Event e;
+    while (SDL_PollEvent(&e)) {
+      switch (e.type) {
+      case SDL_QUIT:
+        running = false;
+        break;
+      }
+    }
+
+    SDL_SetRenderDrawColor(test_rend, WHITE);
+    SDL_RenderClear(test_rend);
+    SDL_RenderPresent(test_rend);
+  }
+}
+
+/******************************************************************************
  *                                     MAIN
  ******************************************************************************/
 
 int main(int argc, char **argv) {
-  std::vector<sector> track;
-  read_track_file("../track_sample.track", track);
+  test();
   //  Game g;
   //  g.run();
   return 0;

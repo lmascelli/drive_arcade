@@ -25,7 +25,18 @@ using Point = SDL_FPoint;
 typedef struct {
   float angle;
   float length;
+  float starting_pendence;
+  Point starting_point_or_center;
   std::function<float(float)> f;
 } sector;
 
-bool read_track_file(std::string filename, std::vector<sector>& track);
+typedef struct {
+  std::vector<sector> sectors;
+  float length;
+} track;
+
+bool read_track_file(std::string filename, track &t);
+
+unsigned int get_sector_from_distance(float d, track& t);
+
+Point get_world_coord_from_distance(float d, track& t);
