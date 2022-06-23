@@ -1,4 +1,5 @@
 #include <SDL2/SDL.h>
+
 #include <assert.h>
 #include <iostream>
 #include <math.h>
@@ -148,6 +149,7 @@ void Game::render() {
 void test() {
   SDL_Window *test_wind;
   SDL_Renderer *test_rend;
+  SDL_Texture *test_text;
   bool running = true;
 
   const unsigned int width = 100, height = 200;
@@ -155,27 +157,34 @@ void test() {
   read_track_file("../track_sample.track", t);
 
   float d = 0.f;
-  unsigned char pixels[width * height * 4];
+  unsigned char pixels[width * height * 4] = {255};
   while (d < t.length - 1) {
     Point x = get_world_coord_from_distance(d, t);
-    assert(x.x < width and x.y < height);
     for (unsigned int i = 0; i < 4; i++)
-      pixels[static_cast<unsigned int>(x.x) +
-             width * static_cast<unsigned int>(x.y) + i] = 0;
+      if (0 < x.x and x.x < width and 0 < x.y and x.y < height) {
+        pixels[static_cast<unsigned int>(x.x) + width +
+               static_cast<unsigned int>(x.y)] = 0;
+        printf("(%f, %f)\n", x.x, x.y);
+      }
+
     d++;
   }
 
   if (!SDL_CreateWindowAndRenderer(300, 600, SDL_WINDOW_SHOWN, &test_wind,
                                    &test_rend)) {
-    SDL_RenderSetScale(test_rend, 2, 2);
+    SDL_RenderSetScale(test_rend, 1, 1);
     SDL_Surface *test_surf;
 
     test_surf = SDL_CreateRGBSurfaceWithFormatFrom(
         (void *)pixels, width, height, 8, 0, SDL_PIXELFORMAT_RGBA32);
+
+    assert(test_surf != NULL);
+
+    test_text = SDL_CreateTextureFromSurface(test_rend, test_surf);
+    assert(test_text != NULL);
   }
 
   while (running) {
-
     SDL_Event e;
     while (SDL_PollEvent(&e)) {
       switch (e.type) {
@@ -187,6 +196,11 @@ void test() {
 
     SDL_SetRenderDrawColor(test_rend, WHITE);
     SDL_RenderClear(test_rend);
+
+    SDL_Rect r1 = {0, 0, width, height};
+    SDL_Rect r2 = {0, static_cast<int>(0), width, height};
+    SDL_RenderCopy(test_rend, test_text, &r1, &r2);
+
     SDL_RenderPresent(test_rend);
   }
 }

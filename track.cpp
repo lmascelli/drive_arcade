@@ -26,6 +26,7 @@ bool read_track_file(std::string filename, track &t) {
       stringstream ss(buffer);
       float angle, length;
       ss >> angle >> length;
+      angle *= (M_PI * 2 / 360.f);
 
       printf("sector %d\n"
              "angle:  %f\n"
@@ -68,7 +69,6 @@ unsigned int get_sector_from_distance(float d, track &t) {
   float cumulative_distance = 0.f;
   unsigned int ret = 0;
   while (cumulative_distance <= d) {
-    printf("cd: %f, d: %f\n", cumulative_distance, d);
     cumulative_distance += t.sectors[ret].length;
     assert(cumulative_distance <= t.length);
     ret++;

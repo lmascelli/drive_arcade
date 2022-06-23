@@ -3,8 +3,8 @@ Clear-Host
 function build()
 {
   Push-Location build
-  cmake .. -G"Ninja"
-  cmake --build .
+  cmake .. -G"Ninja" -DCMAKE_BUILD_TYPE=Debug
+  cmake --build . 
   Move-Item -Force compile_commands.json ..
   ./game
   Pop-Location
