@@ -150,7 +150,7 @@ void test() {
   SDL_Window *test_wind;
   SDL_Renderer *test_rend;
   SDL_Texture *test_text;
-  bool running = true;
+  bool running = false;         // change that for starting loop
 
   const unsigned int width = 100, height = 200;
   track t;
@@ -159,13 +159,6 @@ void test() {
   float d = 0.f;
   unsigned char pixels[width * height * 4] = {255};
   while (d < t.length - 1) {
-    Point x = get_world_coord_from_distance(d, t);
-    for (unsigned int i = 0; i < 4; i++)
-      if (0 < x.x and x.x < width and 0 < x.y and x.y < height) {
-        pixels[static_cast<unsigned int>(x.x) + width +
-               static_cast<unsigned int>(x.y)] = 0;
-        printf("(%f, %f)\n", x.x, x.y);
-      }
 
     d++;
   }
@@ -175,13 +168,6 @@ void test() {
     SDL_RenderSetScale(test_rend, 1, 1);
     SDL_Surface *test_surf;
 
-    test_surf = SDL_CreateRGBSurfaceWithFormatFrom(
-        (void *)pixels, width, height, 8, 0, SDL_PIXELFORMAT_RGBA32);
-
-    assert(test_surf != NULL);
-
-    test_text = SDL_CreateTextureFromSurface(test_rend, test_surf);
-    assert(test_text != NULL);
   }
 
   while (running) {
@@ -199,7 +185,6 @@ void test() {
 
     SDL_Rect r1 = {0, 0, width, height};
     SDL_Rect r2 = {0, static_cast<int>(0), width, height};
-    SDL_RenderCopy(test_rend, test_text, &r1, &r2);
 
     SDL_RenderPresent(test_rend);
   }
