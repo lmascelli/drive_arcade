@@ -33,7 +33,7 @@ private:
 
   // Camera varibles
   float horizont_distance = 300.; // meters
-  float fov_angle = M_PI_2f;      // radians
+  float fov_angle = M_PIf/2;      // radians
   float rotation_angle = 0.f;
   SDL_FPoint offset = {0.f, 0.f};
 

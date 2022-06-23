@@ -1,6 +1,7 @@
 #include "track.h"
 #include "utility.h"
-#include <cassert>
+#include <assert.h>
+#include <math.h>
 #include <fstream>
 #include <sstream>
 

@@ -1,4 +1,5 @@
 #include "utility.h"
+#include <math.h>
 
 void drawPoint(SDL_Renderer *renderer, unsigned int x, unsigned int y,
                       unsigned char r, unsigned char g, unsigned char b,
